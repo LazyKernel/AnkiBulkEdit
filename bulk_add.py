@@ -5,7 +5,7 @@ from General import General
 
 def update_deck1():
     anki = Anki()
-    forvo = Forvo()
+    forvo = Forvo(['poyotan', 'strawberrybrown'])
     general = General()
     anki.open_package('Active Decks__N2 Vocab_new.apkg')
     notes = anki.get_notes()
