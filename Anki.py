@@ -67,6 +67,11 @@ class Anki:
         cur.close()
         return rows
 
+    def delete_note(self, note_guid: str):
+        cur = self.con.cursor()
+        cur.execute('DELETE FROM notes WHERE guid = ?', [note_guid])
+        cur.close()
+
     def close_package(self):
         self.con.close()
         with open(f'{self.temp_path}/{Anki.media_path}', 'w') as f:
