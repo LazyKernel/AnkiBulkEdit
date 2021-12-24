@@ -17,6 +17,9 @@ class DBUtil:
         'source/frequency/Novels/Novels.zip',
         'source/frequency/Netflix/Netflix V2.zip'
     ]
+    pitch_accent_dicts = [
+        'source/kanjium_pitch_accents.zip'
+    ]
     
     _con = None
 
@@ -84,6 +87,28 @@ class DBUtil:
         con.commit()
         cur.close()
         DBUtil.close_con()
+        
+
+    @staticmethod
+    def load_pitch_accents():
+        print('Loading pitch accents')
+        con = DBUtil.get_con()
+        cur = con.cursor()
+
+        for pitch in DBUtil.pitch_accent_dicts:
+            with zipfile.ZipFile(pitch, 'r') as f:
+                for name in f.namelist():
+                    if name.startswith('tag_bank'):
+                        data_json = json.loads(f.read(name).decode('utf-8'))
+                        cur.executemany('INSERT INTO dict_tag(name, cat, sort, notes, score) VALUES (?, ?, ?, ?, ?)', data_json)
+                    elif name.startswith('term_meta_bank'):
+                        data_json = json.loads(f.read(name).decode('utf-8'))
+                        data_mapped = map(lambda x: (x[0], json.dumps(x[2])), data_json)
+                        cur.executemany('INSERT INTO dict_pitch_accent(word, pitches) VALUES (?, ?)', data_mapped)
+
+        con.commit()
+        cur.close()
+        DBUtil.close_con()
 
     @staticmethod
     def setup_db():
@@ -134,6 +159,32 @@ class DBUtil:
             '''
         )
         cur.execute('CREATE INDEX dict_idx_frequency_word ON dict_frequency (word)')
+
+        # Create pitch accent table
+        print('Setting up pitch accent tables')
+        cur.execute(
+            '''
+            CREATE TABLE dict_tag(
+                id INTEGER PRIMARY KEY,
+                name TEXT,
+                cat TEXT,
+                sort FLOAT,
+                notes TEXT,
+                score FLOAT
+            )
+            '''
+        )
+        cur.execute('CREATE INDEX dict_idx_tag_name ON dict_tag (name)')
+        cur.execute(
+            '''
+            CREATE TABLE dict_pitch_accent(
+                id INTEGER PRIMARY KEY,
+                word TEXT,
+                pitches TEXT
+            )
+            '''
+        )
+        cur.execute('CREATE INDEX dict_idx_pitch_word ON dict_pitch_accent (word)')
         con.commit()
         cur.close()
         DBUtil.close_con()

@@ -42,10 +42,10 @@ class Forvo:
         play_buttons = soup.find_all('span', {'class': 'play'})
         list_of_audio = [{'user': find_user(button.find_next_sibling('span', {'class': 'ofLink'})), 'elem': button} for button in play_buttons]
 
-        list_of_audio = sorted(list_of_audio, sort_users, reverse=True)
+        list_of_audio = sorted(list_of_audio, key=sort_users, reverse=True)
 
         audio = None
-        if len(list_of_audio) > 0:
+        if len(list_of_audio) > 0 and list_of_audio[0]['user'] in self.user_prio_list:
             btn = list_of_audio[0]['elem']
             match = Forvo.audio_regex.match(btn['onclick'])
             if match:

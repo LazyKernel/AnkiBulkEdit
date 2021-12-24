@@ -1,3 +1,6 @@
 __pycache__
 *.apkg
 /source/
+*.zip
+*.apkg
+dropped.txt
